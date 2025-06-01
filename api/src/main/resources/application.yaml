@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: ph
+
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${POSTGRES_USER}
+    password: ${DATABASE_PASSWORD}
+
+  jpa:
+    show-sql: true
+    defer-datasource-initialization: false
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
