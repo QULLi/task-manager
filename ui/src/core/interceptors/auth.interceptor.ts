@@ -16,8 +16,10 @@ export class AuthInterceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
+    // Retrieve token from AuthService (mocked or real)
     const token = this.authService.getToken();
 
+    // If token exists, clone request and add Authorization header
     if (token) {
       const cloned = req.clone({
         setHeaders: {
@@ -27,6 +29,8 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(cloned);
     }
 
+    // If no token present, forward request unchanged
+    // This allows frontend to work without backend for now
     return next.handle(req);
   }
 }
