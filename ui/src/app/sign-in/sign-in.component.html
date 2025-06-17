@@ -1,0 +1,46 @@
+<div class="sign-in-container">
+  <h2>Sign in</h2>
+
+  <!-- Loading spinner or indicator -->
+  <div *ngIf="loading" class="loading-indicator">
+    Signing in...
+  </div>
+
+  <!-- Login form -->
+  <form (ngSubmit)="signIn()" *ngIf="!loading">
+    <label for="email">Email</label>
+    <input
+      id="email"
+      type="email"
+      [(ngModel)]="user.email"
+      name="email"
+      required
+      autocomplete="username"
+    />
+
+    <label for="password">Password</label>
+    <input
+      id="password"
+      type="password"
+      [(ngModel)]="user.password"
+      name="password"
+      required
+      autocomplete="current-password"
+    />
+
+    <button type="submit">Login</button>
+  </form>
+
+  <!-- Optional: Debug / mock info -->
+  <div *ngIf="!loading && user.email && user.password" class="debug-info">
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Password:</strong> {{ user.password }}</p>
+  </div>
+
+  <!-- Placeholder for Supabase integration -->
+  <!--
+  <button (click)="signInWithSupabase()" disabled>
+    Sign in with Supabase (not yet implemented)
+  </button>
+  -->
+</div>
