@@ -17,34 +17,26 @@ import java.util.List;
 public class SecurityConfig {
 
     /**
-     * Configures the security filter chain, including CORS and CSRF settings,
-     * as well as authorization rules for endpoints.
+     * Configures HTTP security for the application.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Enable CORS using the configuration defined in corsConfigurationSource()
                 .cors(Customizer.withDefaults())
-                // Disable CSRF protection to simplify REST API development.
-                // For production, consider enabling CSRF with proper configuration.
                 .csrf(AbstractHttpConfigurer::disable)
-                // Configure authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Allow unauthenticated POST requests to /auth/login (login endpoint)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Required for CORS preflight
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        // Require authentication for all other requests
                         .anyRequest().authenticated()
-                );
+                )
+                .formLogin(Customizer.withDefaults()) // Enables the default login page
+                .logout(Customizer.withDefaults());
 
         return http.build();
     }
 
     /**
-     * Defines CORS configuration to allow requests from the Angular frontend during development.
-     * - Allows only the origin 'http://localhost:4200'.
-     * - Allows common HTTP methods.
-     * - Allows all headers.
-     * - Allows credentials (cookies, authorization headers).
+     * CORS configuration for allowing frontend at localhost:4200.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -52,10 +44,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // Allow cookies or auth headers
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Apply this CORS configuration to all paths
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
