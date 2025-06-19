@@ -1,127 +1,74 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-// import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap, delay } from 'rxjs';
+import {
+  AuthChangeEvent,
+  Session,
+  User
+} from '@supabase/supabase-js';
+import { from, Observable } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
+import { SupabaseService } from '../../app/supabase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly TOKEN_KEY = 'access_token';
-  private readonly USER_KEY = 'auth_user';
-
-  // Base-URL for backend API (for future production use)
-  // private readonly apiUrl = 'http://localhost:8080';
-
   constructor(
-    private router: Router,
-    // private http: HttpClient
+    private supabase: SupabaseService,
+    private router: Router
   ) {}
 
   /**
-   * Local mock login (simulates backend + Supabase-style user/token response).
+   * Sign in user via Supabase Auth.
+   * Returns an Observable that emits the user session on success.
    */
-  login(email: string, password: string): Observable<{ token: string; user: any }> {
-    console.log('Mock login with:', email, password);
-
-    return of({
-      token: this.generateMockToken(email),
-      user: {
-        id: 1,
-        email,
-        name: 'Test User'
-      }
-    }).pipe(
-      delay(1000), // simulate latency
-      tap(response => {
-        this.setToken(response.token);
-        this.setUser(response.user);
-      })
+  login(email: string): Observable<Session> {
+    return from(this.supabase.signIn(email)).pipe(
+      tap(({ error }) => {
+        if (error) {
+          throw error;
+        }
+      }),
+      map(response => response.data.session as Session)
     );
-
-    /*
-    // Production login via backend
-    return this.http.post<{ token: string; user: any }>(
-      `${this.apiUrl}/auth/login`,
-      { email, password }
-    ).pipe(
-      tap(response => {
-        this.setToken(response.token);
-        this.setUser(response.user);
-      })
-    );
-    */
   }
 
   /**
-   * Mock JWT token generator – base64-encoded payload (not cryptographically signed).
-   */
-  private generateMockToken(email: string): string {
-    const payload = {
-      sub: '1',
-      email,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour expiry
-    };
-    return btoa(JSON.stringify(payload));
-  }
-
-  /**
-   * Store token in localStorage.
-   */
-  setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
-  }
-
-  /**
-   * Get token from localStorage.
-   */
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  /**
-   * Store user object in localStorage.
-   */
-  setUser(user: any): void {
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-  }
-
-  /**
-   * Get user object from localStorage.
-   */
-  getUser(): any {
-    const user = localStorage.getItem(this.USER_KEY);
-    return user ? JSON.parse(user) : null;
-  }
-
-  /**
-   * Check if token exists.
-   */
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-
-  /**
-   * Logout: clear token & user, navigate to login.
+   * Log out the current user and navigate to sign-in page.
    */
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this.router.navigate(['/login']);
+    this.supabase.signOut()
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error during sign out:', error);
+        }
+        this.router.navigate(['/signIn']);
+      });
   }
 
-  /*
-  // Future Supabase/Auth0 or backend-based methods can go here:
+  /**
+   * Check if a valid session exists (i.e., user is signed in).
+   */
+  async isLoggedIn(): Promise<boolean> {
+    const session = await this.supabase.getSession();
+    return session?.user != null;
+  }
 
-  // Supabase-style async signIn (not implemented)
-  // signIn(email: string): Promise<void> {
-  //   // Implement Supabase sign-in
-  // }
+  /**
+   * Get the current signed-in user, or null if not authenticated.
+   */
+  async getUser(): Promise<User | null> {
+    return await this.supabase.getUser();
+  }
 
-  // Auth0-style redirect login (placeholder)
-  // loginWithRedirect(): void {
-  //   // e.g., redirect to Auth0 login page
-  // }
-  */
+  /**
+   * Subscribe to auth state changes (login/logout) from Supabase.
+   */
+  onAuthChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
+    return this.supabase.authChanges(callback);
+  }
+
+    getToken(): string | null {
+    return localStorage.getItem('token');
+  }
 }

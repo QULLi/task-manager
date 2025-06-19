@@ -1,46 +1,53 @@
-<div class="sign-in-container">
-  <h2>Sign in</h2>
+<div class="row justify-content-center my-5">
+  <div class="col-4">
+    <div class="card">
+      <div class="card-body">
 
-  <!-- Loading spinner or indicator -->
-  <div *ngIf="loading" class="loading-indicator">
-    Signing in...
+        <!-- Success message -->
+        <div *ngIf="successMessage" class="alert alert-success" role="alert">
+          {{ successMessage }}
+        </div>
+
+        <!-- Error message -->
+        <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+          {{ errorMessage }}
+        </div>
+
+        <div class="row mb-3">
+          <div class="col">
+            <label for="email" class="form-label">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="user.email"
+              class="form-control form-control-sm"
+              [disabled]="loading"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col d-grid">
+            <button
+              type="button"
+              (click)="signIn()"
+              class="btn btn-sm btn-success"
+              [disabled]="loading || !user.email"
+            >
+              <span
+                class="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+                *ngIf="loading"
+              ></span>
+              Send Magic Link
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
-
-  <!-- Login form -->
-  <form (ngSubmit)="signIn()" *ngIf="!loading">
-    <label for="email">Email</label>
-    <input
-      id="email"
-      type="email"
-      [(ngModel)]="user.email"
-      name="email"
-      required
-      autocomplete="username"
-    />
-
-    <label for="password">Password</label>
-    <input
-      id="password"
-      type="password"
-      [(ngModel)]="user.password"
-      name="password"
-      required
-      autocomplete="current-password"
-    />
-
-    <button type="submit">Login</button>
-  </form>
-
-  <!-- Optional: Debug / mock info -->
-  <div *ngIf="!loading && user.email && user.password" class="debug-info">
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Password:</strong> {{ user.password }}</p>
-  </div>
-
-  <!-- Placeholder for Supabase integration -->
-  <!--
-  <button (click)="signInWithSupabase()" disabled>
-    Sign in with Supabase (not yet implemented)
-  </button>
-  -->
 </div>

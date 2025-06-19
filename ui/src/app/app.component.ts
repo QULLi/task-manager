@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-// import { SupabaseService } from './supabase.service';
-import { AuthService } from '../core/services/auth.service';
 import { NgIf } from '@angular/common';
+import { SupabaseService } from './supabase.service';
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-root',
@@ -13,52 +13,41 @@ import { NgIf } from '@angular/common';
 })
 export class AppComponent implements OnInit {
   title = 'task-manager-ui';
-  session: any = null;
+  sessionUser: any = null;
 
   constructor(
     private router: Router,
-    private authService: AuthService
-    // private supabaseService: SupabaseService
+    private supabase: SupabaseService
   ) {
-    // For mock login: retrieve the session if user is logged in
-    this.session = this.authService.isLoggedIn() ? this.authService.getUser() : null;
+    // Initialize session asynchronously
+    this.loadInitialSession();
+  }
 
-    // Supabase version (if using Supabase backend):
-    // this.session = this.supabaseService.getSession();
+  /** Load existing session on startup */
+  private async loadInitialSession(): Promise<void> {
+    const session: Session | null = await this.supabase.getSession();
+    this.sessionUser = session?.user ?? null;
   }
 
   ngOnInit(): void {
-    // Supabase version (auth change subscription):
-    /*
-    this.supabaseService.authChanges((_, session) => {
-      this.session = session;
+    // Listen for future auth changes
+    this.supabase.authChanges((_: AuthChangeEvent, session: Session | null) => {
+      this.sessionUser = session?.user ?? null;
+      if (session?.user) {
+        this.router.navigate(['/profile']);
+      }
     });
-    */
-
-    // Update session on component init (mock)
-    this.session = this.authService.isLoggedIn() ? this.authService.getUser() : null;
   }
 
+  /** True if a user is authenticated */
   isAuthenticated(): boolean {
-    return this.authService.isLoggedIn();
+    return this.sessionUser !== null;
   }
 
-  getUser(): any {
-    return this.authService.getUser();
-  }
-
+  /** Sign out and navigate to Sign-In */
   signOut(): void {
-    // Perform logout using AuthService
-    this.authService.logout();
-    this.session = null;
-    this.router.navigate(['/signIn']);
-
-    // Supabase version:
-    /*
-    this.supabaseService.signOut()
-      .then(() => {
-        this.router.navigate(['/signIn']);
-      });
-    */
+    this.supabase.signOut().then(() => {
+      this.router.navigate(['/signIn']);
+    });
   }
 }

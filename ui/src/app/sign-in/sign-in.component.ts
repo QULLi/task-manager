@@ -1,68 +1,59 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-// import { IUser, SupabaseService } from '../supabase.service';
-import { AuthService } from '../../core/services/auth.service';
 import { NgIf } from '@angular/common';
+import { SupabaseService } from '../../app/supabase.service';
 
 @Component({
   selector: 'app-sign-in',
   standalone: true,
+  imports: [FormsModule, NgIf],
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.scss'],
-  imports: [FormsModule, NgIf]
 })
 export class SignInComponent {
   loading = false;
+  errorMessage = '';
+  successMessage = '';
 
-  // Bound to form input fields
+  // Only email is required for magic-link login
   user = {
-    email: '',
-    password: ''
+    email: ''
   };
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    // private supabaseService: SupabaseService // Placeholder for future Supabase integration
+    private supabaseService: SupabaseService
   ) {}
 
   /**
-   * Handle form submission and attempt login
+   * Send magic link to the provided email and handle UI feedback.
    */
-  public signIn(): void {
-    if (!this.user.email || !this.user.password) {
-      console.error('Email and password must be provided');
+  public async signIn(): Promise<void> {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (!this.user.email) {
+      this.errorMessage = 'Email must be provided';
       return;
     }
 
     this.loading = true;
+    try {
+      const { data, error } = await this.supabaseService.signIn(this.user.email);
+      this.loading = false;
 
-    // Local/mock login (using AuthService)
-    this.authService.login(this.user.email, this.user.password).subscribe({
-      next: (response) => {
-        this.loading = false;
-        // Navigate to profile page after successful login
-        this.router.navigate(['/profile']);
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error('Invalid login credentials:', err);
-        // Optional: show user-facing error message here
+      if (error) {
+        console.error('Supabase signIn failed:', error);
+        this.errorMessage = error.message;
+        return;
       }
-    });
 
-    /*
-    // Supabase-style login for future use
-    this.supabaseService.signIn(this.user.email)
-      .then(() => {
-        this.loading = false;
-        this.router.navigate(['/profile']);
-      })
-      .catch(err => {
-        this.loading = false;
-        console.error('Supabase login failed:', err);
-      });
-    */
+      this.successMessage = 'Magic link sent! Check your email to continue.';
+    } catch (err: any) {
+      this.loading = false;
+      console.error('Unexpected error during signIn:', err);
+      this.errorMessage = err.message || 'An unexpected error occurred';
+    }
   }
 }
