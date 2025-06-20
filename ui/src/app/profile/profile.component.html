@@ -1,38 +1,120 @@
 <div class="row justify-content-center my-5">
   <div class="col-4">
-    <div class="row" *ngIf="user.url">
-      <div class="col mb-2 text-center">
-        <img [src]="user.url" class="rounded-circle" alt="User avatar">
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="col mb-2">
-        <label for="email" class="form-label">Email:</label>
-        <input type="email" id="email" name="email" #email="ngModel" [(ngModel)]="user.email" disabled class="form-control form-control-sm">
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="col mb-2">
-        <label for="name" class="form-label">Name:</label>
-        <input type="text" id="name" name="name" #name="ngModel" [(ngModel)]="user.name" class="form-control form-control-sm" [disabled]="loading">
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="col mb-2">
-        <label for="website" class="form-label">Website:</label>
-        <input type="text" id="website" name="website" #website="ngModel" [(ngModel)]="user.website" class="form-control form-control-sm" [disabled]="loading">
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="col d-grid">
-        <button type="button" (click)="update()" class="btn btn-sm btn-dark" [disabled]="loading">
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" *ngIf="loading"></span>
-          Save
-        </button>
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <!-- Avatar -->
+        <div class="row mb-3">
+          <div class="col text-center">
+            <img
+              [src]="user.url || 'https://via.placeholder.com/100?text=Avatar'"
+              class="rounded-circle border"
+              width="100"
+              height="100"
+              alt="User avatar"
+            />
+          </div>
+        </div>
+
+        <!-- Email (read-only) -->
+        <div class="row mb-2">
+          <div class="col">
+            <label for="email" class="form-label">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="user.email"
+              disabled
+              class="form-control form-control-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="row mb-2">
+          <div class="col">
+            <label for="name" class="form-label">Username:</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              [(ngModel)]="user.name"
+              [disabled]="loading"
+              class="form-control form-control-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Website -->
+        <div class="row mb-4">
+          <div class="col">
+            <label for="website" class="form-label">Website:</label>
+            <input
+              type="text"
+              id="website"
+              name="website"
+              [(ngModel)]="user.website"
+              [disabled]="loading"
+              class="form-control form-control-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="row">
+          <div class="col d-grid">
+            <button
+              type="button"
+              (click)="update()"
+              class="btn btn-sm btn-dark"
+              [disabled]="loading"
+              aria-label="Save profile changes"
+            >
+              <span
+                class="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+                *ngIf="loading"
+              ></span>
+              Save
+            </button>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="row mt-3">
+          <div class="col d-grid">
+            <button
+              type="button"
+              (click)="signOut()"
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="loading"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+
+
+        <!-- Success Message -->
+        <div class="row mt-3" *ngIf="successMessage">
+          <div class="col">
+            <div class="alert alert-success py-2 px-3" role="alert">
+              {{ successMessage }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="row mt-3" *ngIf="errorMessage">
+          <div class="col">
+            <div class="alert alert-danger py-2 px-3" role="alert">
+              {{ errorMessage }}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

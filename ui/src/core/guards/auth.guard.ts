@@ -1,35 +1,26 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { SupabaseService } from '../../app/supabase.service';
+import { Session } from '@supabase/supabase-js';
 
-/**
- * AuthGuard checks if the user is authenticated (logged in)
- * before allowing route activation.
- * If the user is not logged in, it redirects to the /signIn page.
- */
 @Injectable({
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
 
   constructor(
-    private authService: AuthService,
+    private supabase: SupabaseService,
     private router: Router
   ) {}
 
   /**
-   * Determines whether a route can be activated.
-   * @returns true if the user is logged in,
-   * otherwise a UrlTree redirecting to /signIn.
+   * Asynchronously checks Supabase session before activating the route.
    */
-  canActivate(): boolean | UrlTree {
-    const isLoggedIn = this.authService.isLoggedIn();
-
-    if (isLoggedIn) {
+  async canActivate(): Promise<boolean | UrlTree> {
+    const session: Session | null = await this.supabase.getSession();
+    if (session?.user) {
       return true;
     }
-
-    // User is not logged in, redirect to sign-in page
     return this.router.parseUrl('/signIn');
   }
 }

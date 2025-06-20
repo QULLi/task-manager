@@ -1,11 +1,12 @@
-/**
- * Mocking before implementation of all/real supabase features
- */
-
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {
+  createClient,
+  SupabaseClient,
+  Session,
+  AuthChangeEvent,
+  User
+} from '@supabase/supabase-js';
 import { environment } from '../environments/environment';
-// import { AuthChangeEvent, createClient, Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 export interface IUser {
   email: string;
@@ -15,100 +16,122 @@ export interface IUser {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SupabaseService {
+  private supabaseClient: SupabaseClient;
+  private currentSession: Session | null = null;
 
-  // private supabaseClient: SupabaseClient;
+  constructor() {
+    this.supabaseClient = createClient(
+      environment.supabase.url,
+      environment.supabase.key
+    );
 
-  constructor(private http: HttpClient) {
-    // this.supabaseClient = createClient(environment.supabase.url, environment.supabase.key);
+    // Listen to auth changes and cache session
+    this.supabaseClient.auth.getSession().then(({ data }) => {
+      this.currentSession = data.session ?? null;
+    });
+
+    this.supabaseClient.auth.onAuthStateChange((_event, session) => {
+      this.currentSession = session ?? null;
+    });
   }
 
   /**
-   * Get current user (mocked from localStorage in local mode)
+   * Send a magic link to the provided email for login.
    */
-  public getUser(): any {
-    // return this.supabaseClient.auth.user();
-    return JSON.parse(localStorage.getItem('auth_user') || 'null');
+  public async signIn(email: string): Promise<{
+    data: { user: User | null; session: Session | null };
+    error: any;
+  }> {
+    return this.supabaseClient.auth.signInWithOtp({ email });
   }
 
   /**
-   * Get current session (mocked from localStorage)
+   * Sign out the current user.
    */
-  public getSession(): any {
-    // return this.supabaseClient.auth.session();
-    const token = localStorage.getItem('access_token');
-    const user = this.getUser();
-    return token && user ? { access_token: token, user } : null;
+  public async signOut(): Promise<{ error: any }> {
+    return this.supabaseClient.auth.signOut();
   }
 
   /**
-   * Get user profile from local backend
+   * Get the current session (asynchronous).
    */
-  public getProfile(): Promise<any> {
-    const user = this.getUser();
-    // return this.supabaseClient.from('profiles')
-    //   .select('username, website, avatar_url')
-    //   .eq('id', user?.id)
-    //   .single();
-    return this.http.get<any>(`${environment.apiUrl}/profile/${user.id}`).toPromise();
+  public async getSession(): Promise<Session | null> {
+    const { data } = await this.supabaseClient.auth.getSession();
+    return data.session;
   }
 
   /**
-   * Auth change listener – not available in mock
+   * Get the currently signed-in user (asynchronous).
    */
-  public authChanges(callback: Function): void {
-    // return this.supabaseClient.auth.onAuthStateChange(callback);
-    // No real-time auth in mock/local mode
+  public async getUser(): Promise<User | null> {
+    const { data } = await this.supabaseClient.auth.getUser();
+    return data.user;
   }
 
   /**
-   * Sign in via backend, store token & user
+   * Get the current session synchronously, if available.
    */
-  public signIn(email: string): Promise<any> {
-    // return this.supabaseClient.auth.signIn({ email });
-    return this.http.post<any>(`${environment.apiUrl}/auth`, { email })
-      .toPromise()
-      .then(response => {
-        const user = response.user;
-        const token = response.token;
-
-        localStorage.setItem('auth_user', JSON.stringify(user));
-        localStorage.setItem('access_token', token);
-
-        return response;
-      });
+  public getUserSync(): User | null {
+    return this.currentSession?.user ?? null;
   }
 
   /**
-   * Sign out (clear localStorage)
+   * Subscribe to auth state changes (SIGNED_IN, SIGNED_OUT, etc.).
    */
-  public signOut(): Promise<any> {
-    // return this.supabaseClient.auth.signOut();
-    localStorage.removeItem('auth_user');
-    localStorage.removeItem('access_token');
-    return Promise.resolve();
+  public authChanges(
+    callback: (event: AuthChangeEvent, session: Session | null) => void
+  ): void {
+    this.supabaseClient.auth.onAuthStateChange((event, session) => {
+      this.currentSession = session ?? null;
+      callback(event, session ?? null);
+    });
   }
 
   /**
-   * Update user profile via backend
+   * Fetch the profile record for the signed-in user.
    */
-  public updateProfile(userUpdate: IUser): Promise<any> {
-    const user = this.getUser();
+  public async getProfile(): Promise<{
+    data: { username: string; website: string; avatar_url: string } | null;
+    error: any;
+  }> {
+    const user = await this.getUser();
+    if (!user) {
+      return { data: null, error: new Error('Not signed in') };
+    }
 
-    const update = {
-      id: user?.id,
+    return this.supabaseClient
+      .from('profiles')
+      .select('username, website, avatar_url')
+      .eq('id', user.id)
+      .single();
+  }
+
+  /**
+   * Upsert the profile record for the signed-in user.
+   */
+  public async updateProfile(userUpdate: IUser): Promise<{ data: any; error: any }> {
+    const user = await this.getUser();
+    if (!user) {
+      return { data: null, error: new Error('Not signed in') };
+    }
+
+    const payload = {
+      id: user.id,
       username: userUpdate.name,
       website: userUpdate.website,
       avatar_url: userUpdate.url,
-      updated_at: new Date(),
+      updated_at: new Date().toISOString(),
     };
 
-    // return this.supabaseClient.from('profiles').upsert(update, {
-    //   returning: 'minimal',
-    // });
+    return this.supabaseClient
+      .from('profiles')
+      .upsert(payload);
+  }
 
-    return this.http.put<any>(`${environment.apiUrl}/profile`, update).toPromise();
+  get client(): SupabaseClient {
+  return this.supabaseClient;
   }
 }

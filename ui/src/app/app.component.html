@@ -2,33 +2,51 @@
   <div class="container-fluid">
     <a class="navbar-brand" href="#">Angular Supabase</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbarContent" class="collapse navbar-collapse">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/signIn" routerLinkActive="active" *ngIf="!isAuthenticated()">Sign in</a>
+          <a
+            class="nav-link"
+            routerLink="/signIn"
+            routerLinkActive="active"
+            *ngIf="!isAuthenticated()"
+          >
+            Sign in
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/profile" routerLinkActive="active" *ngIf="isAuthenticated()">Profile</a>
+          <a
+            class="nav-link"
+            routerLink="/profile"
+            routerLinkActive="active"
+            *ngIf="isAuthenticated()"
+          >
+            Profile
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="" (click)="signOut()" *ngIf="isAuthenticated()">Sign out</a>
+          <a
+            class="nav-link"
+            href="#"
+            (click)="signOut()"
+            *ngIf="isAuthenticated()"
+          >
+            Sign out
+          </a>
         </li>
       </ul>
-
-      <!-- Show user info when authenticated (mock) -->
-      <span class="navbar-text ms-auto" *ngIf="isAuthenticated()">
-        Signed in as: <strong>{{ getUser()?.name }}</strong>
-      </span>
-
-      <!-- Supabase/Auth0 version:
-      <span class="navbar-text ms-auto" *ngIf="session">
-        Signed in as: <strong>{{ session.user.email }}</strong>
-      </span>
-      -->
     </div>
   </div>
 </nav>
