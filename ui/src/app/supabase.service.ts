@@ -1,3 +1,8 @@
+/**
+ * SupabaseService encapsulates authentication and user profile operations
+ * using the Supabase JavaScript client.
+ */
+
 import { Injectable } from '@angular/core';
 import {
   createClient,
@@ -28,18 +33,20 @@ export class SupabaseService {
       environment.supabase.key
     );
 
-    // Listen to auth changes and cache session
+    // Load initial session if available
     this.supabaseClient.auth.getSession().then(({ data }) => {
       this.currentSession = data.session ?? null;
     });
 
+    // Subscribe to auth state changes and keep session updated
     this.supabaseClient.auth.onAuthStateChange((_event, session) => {
       this.currentSession = session ?? null;
     });
   }
 
   /**
-   * Send a magic link to the provided email for login.
+   * Initiates a passwordless login flow by sending a magic link to the given email.
+   * If the user does not exist, an account will be created automatically.
    */
   public async signIn(email: string): Promise<{
     data: { user: User | null; session: Session | null };
@@ -49,14 +56,14 @@ export class SupabaseService {
   }
 
   /**
-   * Sign out the current user.
+   * Signs out the currently authenticated user.
    */
   public async signOut(): Promise<{ error: any }> {
     return this.supabaseClient.auth.signOut();
   }
 
   /**
-   * Get the current session (asynchronous).
+   * Retrieves the current authentication session asynchronously.
    */
   public async getSession(): Promise<Session | null> {
     const { data } = await this.supabaseClient.auth.getSession();
@@ -64,7 +71,7 @@ export class SupabaseService {
   }
 
   /**
-   * Get the currently signed-in user (asynchronous).
+   *  Retrieves the currently authenticated user asynchronously.
    */
   public async getUser(): Promise<User | null> {
     const { data } = await this.supabaseClient.auth.getUser();
@@ -72,14 +79,14 @@ export class SupabaseService {
   }
 
   /**
-   * Get the current session synchronously, if available.
+   * Returns the currently authenticated user synchronously from cached session.
    */
   public getUserSync(): User | null {
     return this.currentSession?.user ?? null;
   }
 
   /**
-   * Subscribe to auth state changes (SIGNED_IN, SIGNED_OUT, etc.).
+   * Registers a callback for authentication state changes (e.g., SIGNED_IN, SIGNED_OUT).
    */
   public authChanges(
     callback: (event: AuthChangeEvent, session: Session | null) => void
@@ -91,7 +98,8 @@ export class SupabaseService {
   }
 
   /**
-   * Fetch the profile record for the signed-in user.
+   * Fetches the user's profile record from the 'profiles' table.
+   * Requires the user to be authenticated.
    */
   public async getProfile(): Promise<{
     data: { username: string; website: string; avatar_url: string } | null;
@@ -110,7 +118,8 @@ export class SupabaseService {
   }
 
   /**
-   * Upsert the profile record for the signed-in user.
+   * Inserts or updates the user's profile in the 'profiles' table.
+   * Requires the user to be authenticated.
    */
   public async updateProfile(userUpdate: IUser): Promise<{ data: any; error: any }> {
     const user = await this.getUser();
@@ -131,6 +140,9 @@ export class SupabaseService {
       .upsert(payload);
   }
 
+  /**
+   * Returns the underlying Supabase client instance.
+   */
   get client(): SupabaseClient {
   return this.supabaseClient;
   }
