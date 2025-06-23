@@ -1,18 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { NgIf } from '@angular/common';
 import { SupabaseService } from './supabase.service';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterModule, NgIf],
+    standalone: true,
+    imports: [RouterModule, CommonModule],
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss']
+    styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
   title = 'task-manager-ui';
-  sessionUser: any = null;
+  sessionUser: Session['user'] | null = null;
 
   constructor(
     private router: Router,
@@ -29,10 +30,11 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Listen for future auth changes
     this.supabase.authChanges((_: AuthChangeEvent, session: Session | null) => {
+      const prev = this.sessionUser?.id;
       this.sessionUser = session?.user ?? null;
-      if (session?.user) {
+
+      if (!prev && session?.user) {
         this.router.navigate(['/profile']);
       }
     });
@@ -46,6 +48,7 @@ export class AppComponent implements OnInit {
   /** Sign out and navigate to Sign-In */
   signOut(): void {
     this.supabase.signOut().then(() => {
+      this.sessionUser = null;
       this.router.navigate(['/signIn']);
     });
   }

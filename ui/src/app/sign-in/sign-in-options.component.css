@@ -1,0 +1,13 @@
+.options-container button {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border-width: 2px !important;
+}
+
+.options-container button.btn-lg {
+  padding: 0.75rem 1rem;
+}
+
+.options-container button:hover {
+  background-color: #f0f0f0 !important;
+}

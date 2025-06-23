@@ -1,21 +1,22 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { SupabaseService } from '../../app/supabase.service';
 
 @Component({
-    selector: 'app-sign-in',
-    imports: [FormsModule, NgIf],
-    templateUrl: './sign-in.component.html',
-    styleUrls: ['./sign-in.component.scss']
+  selector: 'app-sign-in',
+  standalone: true,
+  imports: [FormsModule, CommonModule],
+  templateUrl: './sign-in.component.html',
+  styleUrls: ['./sign-in.component.css']
 })
 export class SignInComponent {
   loading = false;
-  errorMessage = '';
-  successMessage = '';
+  errorMessage: string = '';
+  successMessage: string = '';
 
-  // Only email is required for magic-link login
+  // Only email is needed for magic link login
   user = {
     email: ''
   };
@@ -26,14 +27,15 @@ export class SignInComponent {
   ) {}
 
   /**
-   * Send magic link to the provided email and handle UI feedback.
+   * Sends a magic login link to the provided email address.
+   * Displays appropriate success or error messages based on the outcome.
    */
   public async signIn(): Promise<void> {
     this.errorMessage = '';
     this.successMessage = '';
 
     if (!this.user.email) {
-      this.errorMessage = 'Email must be provided';
+      this.errorMessage = 'Please enter your email address.';
       return;
     }
 
@@ -43,16 +45,16 @@ export class SignInComponent {
       this.loading = false;
 
       if (error) {
-        console.error('Supabase signIn failed:', error);
-        this.errorMessage = error.message;
+        console.error('Magic link login failed:', error);
+        this.errorMessage = error.message || 'Login failed.';
         return;
       }
 
-      this.successMessage = 'Magic link sent! Check your email to continue.';
+      this.successMessage = 'A magic link has been sent to your email. Please check your inbox.';
     } catch (err: any) {
       this.loading = false;
-      console.error('Unexpected error during signIn:', err);
-      this.errorMessage = err.message || 'An unexpected error occurred';
+      console.error('Unexpected error during magic link login:', err);
+      this.errorMessage = err.message || 'An unexpected error occurred.';
     }
   }
 }

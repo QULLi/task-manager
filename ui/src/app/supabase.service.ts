@@ -1,8 +1,3 @@
-/**
- * SupabaseService encapsulates authentication and user profile operations
- * using the Supabase JavaScript client.
- */
-
 import { Injectable } from '@angular/core';
 import {
   createClient,
@@ -56,61 +51,25 @@ export class SupabaseService {
   }
 
   /**
-   * Sign in with email or username and password.
+   * Sign in with email and password only.
    *
-   * @param emailOrUsername  Email or username.
-   * @param password         Plaintext password.
-   * @returns                Auth result with `data` and `error`.
+   * @param email Email address.
+   * @param password Plaintext password.
+   * @returns Auth result with `data` and `error`.
    */
   public async signInWithPassword(
-    emailOrUsername: string,
+    email: string,
     password: string
   ): Promise<{
     data: { user: User | null; session: Session | null };
     error: Error | null;
   }> {
-    // Normalize input: trim whitespace and force lowercase
-    const input = emailOrUsername.trim().toLowerCase();
+    // Normalize email input by trimming whitespace and forcing lowercase
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // Strict email regex (RFC-style, simplified)
-    const emailRegex =
-      /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
-
-    // If it matches email pattern, perform direct email/password login
-    if (emailRegex.test(input)) {
-      const { data, error } = await this.supabaseClient.auth.signInWithPassword({
-        email: input,
-        password
-      });
-      return { data, error: error ?? null };
-    }
-
-    // Reject any username containing '@' to avoid ambiguity with emails
-    if (input.includes('@')) {
-      return {
-        data: { user: null, session: null },
-        error: new Error('Username must not contain "@"')
-      };
-    }
-
-    // Treat as username: look up the corresponding email in profiles table
-    const { data: profile, error: profileError } = await this.supabaseClient
-      .from('profiles')
-      .select('email')
-      .eq('username', input)
-      .single();
-
-    // If lookup failed or no email found, return a generic error
-    if (profileError || !profile?.email) {
-      return {
-        data: { user: null, session: null },
-        error: new Error('Invalid username or password')
-      };
-    }
-
-    // Finally, perform email/password login with the resolved email
+    // Perform email/password login directly
     const { data, error } = await this.supabaseClient.auth.signInWithPassword({
-      email: profile.email,
+      email: normalizedEmail,
       password
     });
     return { data, error: error ?? null };
@@ -132,7 +91,7 @@ export class SupabaseService {
   }
 
   /**
-   *  Retrieves the currently authenticated user asynchronously.
+   * Retrieves the currently authenticated user asynchronously.
    */
   public async getUser(): Promise<User | null> {
     const { data } = await this.supabaseClient.auth.getUser();
@@ -202,9 +161,21 @@ export class SupabaseService {
   }
 
   /**
+   * Updates the currently authenticated user's password.
+   *
+   * @param newPassword New password to set.
+   * @returns Result with error (if any).
+   */
+  public async updatePassword(newPassword: string): Promise<{ error: any }> {
+    return this.supabaseClient.auth.updateUser({
+      password: newPassword
+    });
+  }
+
+  /**
    * Returns the underlying Supabase client instance.
    */
   get client(): SupabaseClient {
-  return this.supabaseClient;
+    return this.supabaseClient;
   }
 }

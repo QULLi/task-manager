@@ -1,21 +1,24 @@
 <div class="row justify-content-center my-5">
   <div class="col-4">
-    <div class="card">
+    <div class="card shadow-sm">
       <div class="card-body">
 
-        <!-- Success message -->
-        <div *ngIf="successMessage" class="alert alert-success" role="alert">
+        <h4 class="mb-4 text-center">Login with Magic Link</h4>
+
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="alert alert-success py-2 px-3" role="alert">
           {{ successMessage }}
         </div>
 
-        <!-- Error message -->
-        <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger py-2 px-3" role="alert">
           {{ errorMessage }}
         </div>
 
+        <!-- Email Input -->
         <div class="row mb-3">
           <div class="col">
-            <label for="email" class="form-label">Email:</label>
+            <label for="email" class="form-label">Email address:</label>
             <input
               type="email"
               id="email"
@@ -23,18 +26,21 @@
               [(ngModel)]="user.email"
               class="form-control form-control-sm"
               [disabled]="loading"
+              placeholder="Enter your email"
               required
             />
           </div>
         </div>
 
+        <!-- Submit Button -->
         <div class="row">
           <div class="col d-grid">
             <button
               type="button"
+              class="btn btn-sm btn-dark"
               (click)="signIn()"
-              class="btn btn-sm btn-success"
               [disabled]="loading || !user.email"
+              aria-label="Send magic link"
             >
               <span
                 class="spinner-border spinner-border-sm me-2"

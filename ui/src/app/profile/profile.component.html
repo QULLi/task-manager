@@ -31,7 +31,7 @@
           </div>
         </div>
 
-        <!-- Name -->
+        <!-- Username -->
         <div class="row mb-2">
           <div class="col">
             <label for="name" class="form-label">Username:</label>
@@ -61,7 +61,38 @@
           </div>
         </div>
 
-        <!-- Save Button -->
+        <!-- New Password -->
+        <div class="row mb-2">
+          <div class="col">
+            <label for="password" class="form-label">New password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              [(ngModel)]="newPassword"
+              [disabled]="loading"
+              class="form-control form-control-sm"
+              placeholder="Enter new password"
+            />
+          </div>
+        </div>
+
+        <!-- Change Password Button -->
+        <div class="row mb-4">
+          <div class="col d-grid">
+            <button
+              type="button"
+              (click)="changePassword()"
+              class="btn btn-sm btn-warning"
+              [disabled]="loading || !newPassword"
+              aria-label="Change password"
+            >
+              Change Password
+            </button>
+          </div>
+        </div>
+
+        <!-- Save Profile Button -->
         <div class="row">
           <div class="col d-grid">
             <button
@@ -95,7 +126,6 @@
             </button>
           </div>
         </div>
-
 
         <!-- Success Message -->
         <div class="row mt-3" *ngIf="successMessage">
