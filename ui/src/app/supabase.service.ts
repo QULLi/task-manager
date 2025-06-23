@@ -56,6 +56,67 @@ export class SupabaseService {
   }
 
   /**
+   * Sign in with email or username and password.
+   *
+   * @param emailOrUsername  Email or username.
+   * @param password         Plaintext password.
+   * @returns                Auth result with `data` and `error`.
+   */
+  public async signInWithPassword(
+    emailOrUsername: string,
+    password: string
+  ): Promise<{
+    data: { user: User | null; session: Session | null };
+    error: Error | null;
+  }> {
+    // Normalize input: trim whitespace and force lowercase
+    const input = emailOrUsername.trim().toLowerCase();
+
+    // Strict email regex (RFC-style, simplified)
+    const emailRegex =
+      /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
+
+    // If it matches email pattern, perform direct email/password login
+    if (emailRegex.test(input)) {
+      const { data, error } = await this.supabaseClient.auth.signInWithPassword({
+        email: input,
+        password
+      });
+      return { data, error: error ?? null };
+    }
+
+    // Reject any username containing '@' to avoid ambiguity with emails
+    if (input.includes('@')) {
+      return {
+        data: { user: null, session: null },
+        error: new Error('Username must not contain "@"')
+      };
+    }
+
+    // Treat as username: look up the corresponding email in profiles table
+    const { data: profile, error: profileError } = await this.supabaseClient
+      .from('profiles')
+      .select('email')
+      .eq('username', input)
+      .single();
+
+    // If lookup failed or no email found, return a generic error
+    if (profileError || !profile?.email) {
+      return {
+        data: { user: null, session: null },
+        error: new Error('Invalid username or password')
+      };
+    }
+
+    // Finally, perform email/password login with the resolved email
+    const { data, error } = await this.supabaseClient.auth.signInWithPassword({
+      email: profile.email,
+      password
+    });
+    return { data, error: error ?? null };
+  }
+
+  /**
    * Signs out the currently authenticated user.
    */
   public async signOut(): Promise<{ error: any }> {
