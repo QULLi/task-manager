@@ -4,11 +4,10 @@ import { NgIf } from '@angular/common';
 import { SupabaseService, IUser } from '../../app/supabase.service';
 
 @Component({
-  standalone: true,
-  selector: 'app-profile',
-  templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss'],
-  imports: [FormsModule, NgIf]
+    selector: 'app-profile',
+    templateUrl: './profile.component.html',
+    styleUrls: ['./profile.component.scss'],
+    imports: [FormsModule, NgIf]
 })
 export class ProfileComponent implements OnInit {
   loading = false;

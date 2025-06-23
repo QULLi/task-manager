@@ -5,11 +5,10 @@ import { SupabaseService } from './supabase.service';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterModule, NgIf],
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+    selector: 'app-root',
+    imports: [RouterModule, NgIf],
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   title = 'task-manager-ui';

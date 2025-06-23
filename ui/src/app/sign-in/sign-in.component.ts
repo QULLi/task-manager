@@ -5,11 +5,10 @@ import { NgIf } from '@angular/common';
 import { SupabaseService } from '../../app/supabase.service';
 
 @Component({
-  selector: 'app-sign-in',
-  standalone: true,
-  imports: [FormsModule, NgIf],
-  templateUrl: './sign-in.component.html',
-  styleUrls: ['./sign-in.component.scss'],
+    selector: 'app-sign-in',
+    imports: [FormsModule, NgIf],
+    templateUrl: './sign-in.component.html',
+    styleUrls: ['./sign-in.component.scss']
 })
 export class SignInComponent {
   loading = false;
