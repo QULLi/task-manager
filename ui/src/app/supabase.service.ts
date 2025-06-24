@@ -1,8 +1,3 @@
-/**
- * SupabaseService encapsulates authentication and user profile operations
- * using the Supabase JavaScript client.
- */
-
 import { Injectable } from '@angular/core';
 import {
   createClient,
@@ -56,6 +51,31 @@ export class SupabaseService {
   }
 
   /**
+   * Sign in with email and password only.
+   *
+   * @param email Email address.
+   * @param password Plaintext password.
+   * @returns Auth result with `data` and `error`.
+   */
+  public async signInWithPassword(
+    email: string,
+    password: string
+  ): Promise<{
+    data: { user: User | null; session: Session | null };
+    error: Error | null;
+  }> {
+    // Normalize email input by trimming whitespace and forcing lowercase
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Perform email/password login directly
+    const { data, error } = await this.supabaseClient.auth.signInWithPassword({
+      email: normalizedEmail,
+      password
+    });
+    return { data, error: error ?? null };
+  }
+
+  /**
    * Signs out the currently authenticated user.
    */
   public async signOut(): Promise<{ error: any }> {
@@ -71,7 +91,7 @@ export class SupabaseService {
   }
 
   /**
-   *  Retrieves the currently authenticated user asynchronously.
+   * Retrieves the currently authenticated user asynchronously.
    */
   public async getUser(): Promise<User | null> {
     const { data } = await this.supabaseClient.auth.getUser();
@@ -141,9 +161,21 @@ export class SupabaseService {
   }
 
   /**
+   * Updates the currently authenticated user's password.
+   *
+   * @param newPassword New password to set.
+   * @returns Result with error (if any).
+   */
+  public async updatePassword(newPassword: string): Promise<{ error: any }> {
+    return this.supabaseClient.auth.updateUser({
+      password: newPassword
+    });
+  }
+
+  /**
    * Returns the underlying Supabase client instance.
    */
   get client(): SupabaseClient {
-  return this.supabaseClient;
+    return this.supabaseClient;
   }
 }

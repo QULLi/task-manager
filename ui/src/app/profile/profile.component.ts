@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { SupabaseService, IUser } from '../../app/supabase.service';
 
 @Component({
-  standalone: true,
   selector: 'app-profile',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss'],
-  imports: [FormsModule, NgIf]
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
   loading = false;
@@ -22,10 +22,13 @@ export class ProfileComponent implements OnInit {
     url: ''
   };
 
+  // For changign password
+  newPassword: string = '';
+
   constructor(private supabaseService: SupabaseService) {}
 
   /**
-   * Lifecycle hook that loads the current user and their profile data from Supabase.
+   * Loads the current authenticated user's profile data.
    */
   public async ngOnInit(): Promise<void> {
     this.loading = true;
@@ -58,7 +61,7 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
-   * Updates the user's profile using the Supabase service.
+   * Updates the user's profile data.
    */
   public async update(): Promise<void> {
     this.loading = true;
@@ -82,8 +85,38 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
-   * Signs out the currently authenticated user.
-   * Reloads the page after successful sign-out.
+   * Updates the authenticated user's password.
+   */
+  public async changePassword(): Promise<void> {
+    this.loading = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    if (!this.newPassword) {
+      this.errorMessage = 'Password must be provided.';
+      this.loading = false;
+      return;
+    }
+
+    try {
+      const { error } = await this.supabaseService.updatePassword(this.newPassword);
+      if (error) {
+        this.errorMessage = 'Failed to update password: ' + error.message;
+      } else {
+        this.successMessage = 'Password updated successfully!';
+        this.newPassword = '';
+        this.clearMessagesAfterDelay();
+      }
+    } catch (err: any) {
+      console.error('Unexpected error during password update:', err);
+      this.errorMessage = 'An unexpected error occurred while updating password.';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  /**
+   * Signs out the user and reloads the page.
    */
   public async signOut(): Promise<void> {
     this.loading = true;
@@ -94,7 +127,7 @@ export class ProfileComponent implements OnInit {
       if (error) {
         this.errorMessage = 'Failed to sign out: ' + error.message;
       } else {
-        location.reload(); // Simple reload, or optionally use router navigation
+        location.reload(); // Simple full reload
       }
     } catch (err: any) {
       console.error('Unexpected error during sign-out:', err);
@@ -105,7 +138,7 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
-   * Clears both success and error messages after a short delay (5 seconds).
+   * Clears error and success messages after a short delay.
    */
   private clearMessagesAfterDelay(): void {
     setTimeout(() => {
