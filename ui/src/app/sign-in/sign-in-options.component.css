@@ -1,13 +1,52 @@
-.options-container button {
-  margin-bottom: 1rem;
+.options-card {
+  max-width: 360px;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.options-card h2 {
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.options-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.options-buttons button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
   border-radius: 8px;
-  border-width: 2px !important;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.options-container button.btn-lg {
-  padding: 0.75rem 1rem;
+.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
 }
 
-.options-container button:hover {
-  background-color: #f0f0f0 !important;
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(0,123,255,0.1);
 }
