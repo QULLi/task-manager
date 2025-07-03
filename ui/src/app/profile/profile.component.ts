@@ -1,12 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule }    from '@angular/router';
 import { SupabaseService, IUser } from '../../app/supabase.service';
+
+interface ITask {
+  title: string;
+  description: string;
+  due_date?: string;
+}
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
@@ -22,8 +32,14 @@ export class ProfileComponent implements OnInit {
     url: ''
   };
 
-  // For changign password
+  // For changing password
   newPassword: string = '';
+
+  // For adding a new task
+  task: ITask = { title: '', description: '', due_date: '' };
+  taskLoading = false;
+  taskError: string = '';
+  taskSuccess: string = '';
 
   constructor(private supabaseService: SupabaseService) {}
 
@@ -116,6 +132,44 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
+   * Creates a new task for the authenticated user.
+   */
+  public async createTask(): Promise<void> {
+    this.taskError = '';
+    this.taskSuccess = '';
+
+    if (!this.task.title.trim()) {
+      this.taskError = 'Task title is required.';
+      return;
+    }
+
+    this.taskLoading = true;
+    try {
+      // Insert the new task into 'tasks' table
+      const { error } = await this.supabaseService.client
+        .from('tasks')
+        .insert([{
+          title: this.task.title.trim(),
+          description: this.task.description.trim(),
+          due_date: this.task.due_date || null
+        }]);
+
+      if (error) {
+        console.error('Failed to create task:', error);
+        this.taskError = error.message;
+      } else {
+        this.taskSuccess = 'Task created successfully!';
+        this.resetTaskForm();
+      }
+    } catch (err: any) {
+      console.error('Unexpected error during task creation:', err);
+      this.taskError = 'An unexpected error occurred.';
+    } finally {
+      this.taskLoading = false;
+    }
+  }
+
+  /**
    * Signs out the user and reloads the page.
    */
   public async signOut(): Promise<void> {
@@ -138,12 +192,21 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
+   * Resets task form fields after successful creation.
+   */
+  private resetTaskForm(): void {
+    this.task = { title: '', description: '', due_date: '' };
+  }
+
+  /**
    * Clears error and success messages after a short delay.
    */
   private clearMessagesAfterDelay(): void {
     setTimeout(() => {
       this.errorMessage = null;
       this.successMessage = null;
+      this.taskError = '';
+      this.taskSuccess = '';
     }, 5000);
   }
 }

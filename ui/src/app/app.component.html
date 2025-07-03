@@ -1,13 +1,28 @@
 <header class="app-header">
-  <a routerLink="/" class="app-header__brand">Task Manager UI</a>
+  <a
+    [routerLink]="isAuthenticated() ? '/profile' : '/signIn'"
+    class="app-header__brand"
+  >
+    Task Manager UI
+  </a>
   <nav class="app-header__nav">
     <ul class="app-header__list">
-      <li *ngIf="!isAuthenticated()">
-        <a routerLink="/" routerLinkActive="active">Back Home</a>
+      <!-- Only show “Back Home” if not authed and not on signIn -->
+      <li *ngIf="!isAuthenticated() && router.url !== '/signIn'">
+        <a routerLink="/signIn" routerLinkActive="active">Sign In</a>
       </li>
-      <li *ngIf="isAuthenticated()">
+
+      <!-- Only show “Profile” if authed and not already on profile -->
+      <li *ngIf="isAuthenticated() && router.url !== '/profile'">
         <a routerLink="/profile" routerLinkActive="active">Profile</a>
       </li>
+
+      <!-- Only show “Tasks” if authed and not already on tasks -->
+      <li *ngIf="isAuthenticated() && router.url !== '/tasks'">
+        <a routerLink="/tasks" routerLinkActive="active">Tasks</a>
+      </li>
+
+      <!-- Always allow sign out when authed -->
       <li *ngIf="isAuthenticated()">
         <a role="button" (click)="signOut()">Sign Out</a>
       </li>
