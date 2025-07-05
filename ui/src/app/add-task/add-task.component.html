@@ -1,0 +1,65 @@
+<div class="add-task-card mx-auto my-5">
+  <h2 class="mb-4">Add New Task</h2>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <form (ngSubmit)="createTask()" #taskForm="ngForm" novalidate>
+    <div class="field-group mb-3">
+      <label for="title">Title</label>
+      <input
+        id="title"
+        name="title"
+        type="text"
+        class="form-control"
+        [(ngModel)]="task.title"
+        required
+        [disabled]="loading"
+        placeholder="Enter task title"
+      />
+    </div>
+
+    <div class="field-group mb-3">
+      <label for="description">Description</label>
+      <textarea
+        id="description"
+        name="description"
+        class="form-control"
+        [(ngModel)]="task.description"
+        rows="3"
+        [disabled]="loading"
+        placeholder="Enter task description"
+      ></textarea>
+    </div>
+
+    <div class="field-group mb-4">
+      <label for="due_date">Due Date</label>
+      <input
+        id="due_date"
+        name="due_date"
+        type="date"
+        class="form-control"
+        [(ngModel)]="task.due_date"
+        [disabled]="loading"
+      />
+    </div>
+
+    <button
+      type="submit"
+      class="btn btn-primary w-100"
+      [disabled]="loading || !taskForm.form.valid"
+    >
+      <span
+        *ngIf="loading"
+        class="spinner-border spinner-border-sm me-2"
+        role="status"
+        aria-hidden="true"
+      ></span>
+      {{ loading ? 'Creating...' : 'Create Task' }}
+    </button>
+  </form>
+</div>
