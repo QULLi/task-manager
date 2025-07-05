@@ -1,13 +1,13 @@
 <div class="task-container">
   <!-- Form Section -->
   <div class="task-form">
-    <h2 class="mb-3">Create New Assignment (Mock)</h2>
+    <h2 class="section-header">Create New Assignment (Mock)</h2>
 
     <div *ngIf="formError" class="alert alert-danger">{{ formError }}</div>
     <div *ngIf="formSuccess" class="alert alert-success">{{ formSuccess }}</div>
 
     <form #f="ngForm" (ngSubmit)="addTask(f)" novalidate>
-      <div class="field-group mb-2">
+      <div class="field-group">
         <label for="title">Title</label>
         <input
           id="title"
@@ -21,7 +21,7 @@
         />
       </div>
 
-      <div class="field-group mb-2">
+      <div class="field-group">
         <label for="description">Description</label>
         <textarea
           id="description"
@@ -34,7 +34,7 @@
         ></textarea>
       </div>
 
-      <div class="field-group mb-3">
+      <div class="field-group">
         <label for="due_date">Due Date</label>
         <input
           id="due_date"
@@ -56,30 +56,9 @@
     </form>
   </div>
 
-  <!-- Task List Section -->
+  <!-- List Section -->
   <div class="task-list-wrapper">
-    <h2 class="mb-3">Current Assignments</h2>
-    <ul *ngIf="tasks.length; else noTasks" class="list-group">
-      <li
-        class="list-group-item"
-        *ngFor="let task of tasks"
-      >
-        <div>
-          <strong>{{ task.title }}</strong>
-          <div><small>{{ task.description }}</small></div>
-          <div *ngIf="task.due_date"><small>Due: {{ task.due_date }}</small></div>
-        </div>
-        <button
-          class="btn-remove"
-          (click)="removeTask(task.id)"
-          aria-label="Delete task"
-        >
-          &times;
-        </button>
-      </li>
-    </ul>
-    <ng-template #noTasks>
-      <div class="text-muted">No tasks added yet.</div>
-    </ng-template>
+    <!-- The list component itself will render its own <h2> -->
+    <app-task-list></app-task-list>
   </div>
 </div>

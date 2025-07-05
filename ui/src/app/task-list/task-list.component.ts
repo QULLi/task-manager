@@ -1,22 +1,23 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule }           from '@angular/common';
-import { FormsModule }            from '@angular/forms';
-import { MatTableModule }         from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatSortModule, MatSort }         from '@angular/material/sort';
-import { MatButtonModule }        from '@angular/material/button';
-import { MatIconModule }          from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
+import {
+  MatPaginator,
+  MatPaginatorModule
+} from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableDataSource }     from '@angular/material/table';
-
-import { TaskService, ITask }     from '../../core/services/task.service';
+import { MatTableDataSource } from '@angular/material/table';
+import Swal from 'sweetalert2';
+import { TaskService, ITask } from '../../core/services/task.service';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -28,9 +29,7 @@ import { TaskService, ITask }     from '../../core/services/task.service';
   styleUrls: ['./task-list.component.css']
 })
 export class TaskListComponent implements OnInit {
-  /** In-memory table data source */
   dataSource = new MatTableDataSource<ITask>([]);
-  /** Columns to show in the Material table */
   displayedColumns = ['title', 'description', 'due_date', 'actions'];
 
   loading = false;
@@ -45,10 +44,8 @@ export class TaskListComponent implements OnInit {
     this.loadTasks();
   }
 
-  /** Load tasks from in-memory service into the table */
-  private loadTasks() {
+  public loadTasks() {
     this.loading = true;
-    // simulate async latency
     setTimeout(() => {
       const tasks = this.taskService.getTasks();
       this.dataSource.data = tasks;
@@ -58,11 +55,57 @@ export class TaskListComponent implements OnInit {
     }, 200);
   }
 
-  /**
-   * Remove a task in-memory and refresh table.
-   */
-  public deleteTask(id: number) {
-    this.taskService.removeTask(id);
-    this.loadTasks();
+  /** Confirm and delete */
+  public async deleteTask(id: number) {
+    const result = await Swal.fire({
+      title: 'Delete assignment?',
+      text: 'This cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      this.taskService.removeTask(id);
+      this.loadTasks();
+      Swal.fire('Deleted!', 'Assignment has been removed.', 'success');
+    }
+  }
+
+  /** Open a popup to edit title/description/due_date */
+  public async editTask(task: ITask) {
+    const { value: formValues } = await Swal.fire({
+      title: 'Edit assignment',
+      html:
+        `<input id="swal-title" class="swal2-input" placeholder="Title" value="${task.title}">` +
+        `<textarea id="swal-desc" class="swal2-textarea" placeholder="Description">${task.description}</textarea>` +
+        `<input id="swal-date" type="date" class="swal2-input" value="${task.due_date || ''}">`,
+      focusConfirm: false,
+      preConfirm: () => {
+        const title = (document.getElementById('swal-title') as HTMLInputElement).value;
+        const description = (document.getElementById('swal-desc') as HTMLTextAreaElement).value;
+        const due_date = (document.getElementById('swal-date') as HTMLInputElement).value;
+        if (!title.trim()) {
+          Swal.showValidationMessage('Title is required');
+        }
+        return { title, description, due_date };
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (formValues) {
+      const updated: ITask = {
+        ...task,
+        title: formValues.title.trim(),
+        description: formValues.description.trim(),
+        due_date: formValues.due_date || undefined
+      };
+      this.taskService.updateTask(updated);
+      this.loadTasks();
+      Swal.fire('Saved!', 'Assignment updated.', 'success');
+    }
   }
 }
