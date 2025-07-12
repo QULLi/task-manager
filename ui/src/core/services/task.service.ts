@@ -27,6 +27,14 @@ export class TaskService {
     this.tasks.push(task);
   }
 
+  /** Update an existing mock task */
+  updateTask(updated: ITask): void {
+    const index = this.tasks.findIndex(t => t.id === updated.id);
+    if (index > -1) {
+      this.tasks[index] = { ...updated };
+    }
+  }
+
   /** Remove a task by its ID */
   removeTask(id: number): void {
     this.tasks = this.tasks.filter(t => t.id !== id);
@@ -39,31 +47,36 @@ export class TaskService {
       {
         id: 1,
         title: 'Radiology Nurse – 3-day assignment',
-        description: 'Temporary placement at Radiology Unit, St. Erik Hospital. Assist with CT and MRI imaging, start: tomorrow.',
+        description:
+          'Temporary placement at Radiology Unit, St. Erik Hospital. Assist with CT and MRI imaging, start: tomorrow.',
         due_date: this.formatDate(this.addDays(today, 1)),
       },
       {
         id: 2,
         title: 'Assistant Nurse – Night shift coverage',
-        description: 'Night shift coverage at Acute Geriatrics, Östra Regional Hospital. Responsible for basic care and vitals.',
+        description:
+          'Night shift coverage at Acute Geriatrics, Östra Regional Hospital. Responsible for basic care and vitals.',
         due_date: this.formatDate(this.addDays(today, 0)),
       },
       {
         id: 3,
         title: 'Medical Doctor – Weekend ER standby',
-        description: 'Weekend coverage at Emergency Department, NorthCare Medical. General internal medicine responsibilities.',
+        description:
+          'Weekend coverage at Emergency Department, NorthCare Medical. General internal medicine responsibilities.',
         due_date: this.formatDate(this.addDays(today, 2)),
       },
       {
         id: 4,
         title: 'Physiotherapist – Rehab ward consultation',
-        description: 'Consulting physiotherapist needed for orthopedic rehab patients at Danderyd Hospital. One-day assignment.',
+        description:
+          'Consulting physiotherapist needed for orthopedic rehab patients at Danderyd Hospital. One-day assignment.',
         due_date: this.formatDate(this.addDays(today, 3)),
       },
       {
         id: 5,
         title: 'Midwife – Temporary coverage maternity unit',
-        description: 'Midwife needed at Söderkliniken for routine deliveries and check-ups. Duration: 2 shifts, incl. handover.',
+        description:
+          'Midwife needed at Söderkliniken for routine deliveries and check-ups. Duration: 2 shifts, incl. handover.',
         due_date: this.formatDate(this.addDays(today, 4)),
       },
     ];

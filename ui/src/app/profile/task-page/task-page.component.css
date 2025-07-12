@@ -1,50 +1,73 @@
+/* Container that holds both the form and the list */
 .task-container {
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;
   padding: 2rem;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+  align-items: stretch;  /* Make both children the same height */
 }
 
-.task-form,
-.task-list-wrapper {
+/* Form panel styling */
+.task-form {
   flex: 1 1 300px;
   background: #ffffff;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  max-height: 90vh;
-  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
 }
 
+/* List wrapper: no own background or box styling */
 .task-list-wrapper {
-  min-width: 320px;
+  flex: 2 1 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Shared header class for consistent sizing */
+.section-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #333333;
+}
+
+/* Form field groups */
+.field-group {
+  margin-bottom: 1rem;
 }
 
 .field-group label {
   display: block;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  color: #444444;
 }
 
+/* Input and textarea styling */
 .form-control {
   width: 100%;
   padding: 0.5rem;
   font-size: 0.95rem;
-  border: 1px solid #ccc;
+  border: 1px solid #cccccc;
   border-radius: 4px;
-  margin-bottom: 1rem;
   box-sizing: border-box;
 }
 
+/* “Add Assignment” button styling */
 .btn-add {
+  margin-top: auto;  /* Push button to bottom of panel */
   background-color: #007bff;
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
   padding: 0.75rem;
   border: none;
   border-radius: 6px;
+  width: 100%;
   transition: background-color 0.2s ease;
 }
 
@@ -55,31 +78,4 @@
 .btn-add:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.btn-remove {
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: #c00;
-  cursor: pointer;
-  align-self: start;
-}
-
-.btn-remove:hover {
-  color: #800;
-}
-
-.list-group {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.list-group-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 1px solid #eee;
-  padding: 0.75rem 0;
 }

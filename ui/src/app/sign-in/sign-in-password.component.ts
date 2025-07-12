@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SupabaseService } from '../../app/supabase.service';
@@ -7,7 +7,7 @@ import { SupabaseService } from '../../app/supabase.service';
 @Component({
   selector: 'app-sign-in-password',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterModule],
   templateUrl: './sign-in-password.component.html',
   styleUrls: ['./sign-in-password.component.css'],
 })

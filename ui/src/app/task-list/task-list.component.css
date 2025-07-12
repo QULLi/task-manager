@@ -1,39 +1,49 @@
-.task-list-container {
-  max-width: 800px;
-  margin: 1rem auto;
-  padding: 1rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+/* Host sets a flex column to fill available height */
+:host {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  max-height: 80vh;
-  overflow-y: auto;
+  flex: 1;
+  height: 100%;
 }
 
-h2 {
-  margin: 0;
-  font-weight: 600;
+/* Shared header class for consistent sizing */
+.section-header {
   font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
   text-align: center;
+  color: #333333;
 }
 
+/* Remove elevation shadow for a flat look */
+.mat-elevation-z8 {
+  box-shadow: none !important;
+}
+
+/* Table fills available space */
+table {
+  flex: 1 1 auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Paginator pinned to bottom of section */
+mat-paginator {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Spinner centered */
 .spinner {
+  display: block;
   margin: 1rem auto;
 }
 
+/* Error message styling */
 .error-message {
   color: #c00;
   text-align: center;
   font-weight: 600;
-}
-
-table {
-  width: 100%;
-  min-width: 600px;
-}
-
-mat-paginator {
-  align-self: center;
+  margin-bottom: 1rem;
 }
