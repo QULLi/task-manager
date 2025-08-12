@@ -1,6 +1,4 @@
 spring:
-#  flyway:
-#    enabled: false
   datasource:
     url: ${SUPABASE_URL}
     username: ${SUPABASE_USERNAME}
