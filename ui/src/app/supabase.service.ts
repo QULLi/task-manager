@@ -1,5 +1,3 @@
-// src/app/supabase.service.ts
-
 import { Injectable } from '@angular/core';
 import {
   createClient,
@@ -23,7 +21,6 @@ export class SupabaseService {
   private currentSession: Session | null = null;
 
   constructor() {
-    // Initialize Supabase client: detect magic-link tokens, persist session, and auto-refresh tokens
     this.supabaseClient = createClient(
       environment.supabase.url,
       environment.supabase.key,
@@ -36,12 +33,12 @@ export class SupabaseService {
       }
     );
 
-    // Load any existing session from storage on startup
+    // Load existing session on startup
     this.supabaseClient.auth.getSession().then(({ data }) => {
       this.currentSession = data.session;
     });
 
-    // Keep currentSession in sync on auth state changes
+    // Keep currentSession in sync on auth changes
     this.supabaseClient.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         this.currentSession = session;
@@ -49,23 +46,15 @@ export class SupabaseService {
     );
   }
 
-  /**
-   * Send magic link for passwordless login.
-   */
-  async signIn(email: string): Promise<{ data: { user: User | null; session: Session | null }; error: any }> {
+  async signIn(email: string) {
+    // magic link (OTP)
     return this.supabaseClient.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: environment.siteUrl || window.location.origin }
     });
   }
 
-  /**
-   * Sign in with email and password.
-   */
-  async signInWithPassword(
-    email: string,
-    password: string
-  ): Promise<{ data: { user: User | null; session: Session | null }; error: Error | null }> {
+  async signInWithPassword(email: string, password: string) {
     const normalizedEmail = email.trim().toLowerCase();
     const { data, error } = await this.supabaseClient.auth.signInWithPassword({
       email: normalizedEmail,
@@ -74,46 +63,28 @@ export class SupabaseService {
     return { data, error: error ?? null };
   }
 
-  /**
-   * Sign out the current user.
-   */
-  async signOut(): Promise<{ error: any }> {
+  async signOut() {
     return this.supabaseClient.auth.signOut();
   }
 
-  /**
-   * Get current session asynchronously.
-   */
   async getSession(): Promise<Session | null> {
     const { data } = await this.supabaseClient.auth.getSession();
     return data.session;
   }
 
-  /**
-   * Get cached session synchronously.
-   */
   getSessionSync(): Session | null {
     return this.currentSession;
   }
 
-  /**
-   * Get current user asynchronously.
-   */
   async getUser(): Promise<User | null> {
     const { data } = await this.supabaseClient.auth.getUser();
     return data.user;
   }
 
-  /**
-   * Get cached user synchronously.
-   */
   getUserSync(): User | null {
     return this.currentSession?.user ?? null;
   }
 
-  /**
-   * Register callback for auth state changes.
-   */
   authChanges(callback: (event: AuthChangeEvent, session: Session | null) => void): void {
     this.supabaseClient.auth.onAuthStateChange((event, session) => {
       this.currentSession = session;
@@ -121,10 +92,7 @@ export class SupabaseService {
     });
   }
 
-  /**
-   * Fetch the authenticated user’s profile record.
-   */
-  async getProfile(): Promise<{ data: { username: string; website: string; avatar_url: string } | null; error: any }> {
+  async getProfile() {
     const user = await this.getUser();
     if (!user) throw new Error('Not signed in');
     return this.supabaseClient
@@ -134,10 +102,7 @@ export class SupabaseService {
       .single();
   }
 
-  /**
-   * Insert or update the user’s profile record.
-   */
-  async updateProfile(userUpdate: IUser): Promise<{ data: any; error: any }> {
+  async updateProfile(userUpdate: IUser) {
     const user = await this.getUser();
     if (!user) throw new Error('Not signed in');
     const payload = {
@@ -150,17 +115,19 @@ export class SupabaseService {
     return this.supabaseClient.from('profiles').upsert(payload);
   }
 
-  /**
-   * Update the authenticated user’s password.
-   */
-  async updatePassword(newPassword: string): Promise<{ error: any }> {
+  async updatePassword(newPassword: string) {
     return this.supabaseClient.auth.updateUser({ password: newPassword });
   }
 
-  /**
-   * Expose underlying Supabase client.
-   */
   get client(): SupabaseClient {
     return this.supabaseClient;
+  }
+
+  /**
+   * Returns the current access token synchronously (from cached session).
+   * Use this for Authorization header when calling backend.
+   */
+  getAccessTokenSync(): string | null {
+    return this.currentSession?.access_token ?? null;
   }
 }
