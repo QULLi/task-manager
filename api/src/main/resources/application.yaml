@@ -1,12 +1,36 @@
 spring:
   datasource:
+    # Hardcoded JDBC URL (session pooler for eu-north-1) — sslmode=require for Supabase
     url: ${SUPABASE_URL}
+
+    # Hardcoded credentials (for local testing only)
     username: ${SUPABASE_USERNAME}
     password: ${SUPABASE_PASSWORD}
+
     driver-class-name: org.postgresql.Driver
+
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
+
+  flyway:
+    enabled: ${SPRING_FLYWAY_ENABLED}
+    baseline-on-migrate: true
+
+logging:
+  level:
+    com.zaxxer.hikari: INFO
+    org.springframework.jdbc.datasource: INFO
+    org.postgresql: INFO
+
+# Hardcoded JWT secret (for development only)
 jwt:
   secret: ${SUPABASE_JWT_SECRET}

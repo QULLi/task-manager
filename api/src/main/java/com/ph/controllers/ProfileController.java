@@ -47,6 +47,7 @@ public class ProfileController {
         profile.setId(uuid);
         profile.setEmail(dto.getEmail());
         profile.setUsername(dto.getUsername());
+        profile.setWebsite(dto.getWebsite());
         profile.setAvatarUrl(dto.getAvatar_url());
         profile.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 

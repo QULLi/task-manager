@@ -24,6 +24,9 @@ public class Profile {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "website")
+    private String website;
+
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
@@ -33,6 +36,7 @@ public class Profile {
         this.id = id;
         this.email = email;
         this.username = username;
+        this.website = website;
         this.avatarUrl = avatarUrl;
         this.updatedAt = updatedAt;
     }
@@ -46,6 +50,9 @@ public class Profile {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getWebsite() { return website; }
+    public void setWebsite(String website) { this.website = website; }
 
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
