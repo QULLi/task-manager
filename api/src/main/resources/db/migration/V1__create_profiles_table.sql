@@ -1,4 +1,3 @@
--- V1__create_profiles_table.sql
 CREATE TABLE IF NOT EXISTS public.profiles (
                                                id uuid PRIMARY KEY,
                                                email text,
