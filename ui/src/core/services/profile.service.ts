@@ -1,34 +1,52 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService, IUser } from '../../app/supabase.service';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { ApiAuthService, Profile } from '../../app/api-auth.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+/**
+ * ProfileService
+ *
+ * - Prefers in-memory profile from ApiAuthService.
+ * - If not present, attempts to refresh the profile via ApiAuthService.refreshProfile()
+ *   (which requires an access token to be available).
+ * - Also exposes direct fetch by id and update endpoints.
+ */
+@Injectable({ providedIn: 'root' })
 export class ProfileService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(private http: HttpClient, private auth: ApiAuthService) {}
 
   /**
-   * Retrieves the current user's profile from Supabase.
-   * @returns A Promise containing the user's profile data.
-   * @throws Error if the user is not signed in or if the query fails.
+   * Get the current user's profile.
+   * - Return cached profile if available.
+   * - Otherwise attempt to refresh via ApiAuthService (requires access_token).
+   * - Throws when no token is available or network error occurs.
    */
-  async getProfile(): Promise<any> {
-    const user = this.supabase.getUserSync();
-    if (!user) {
-      throw new Error('No user is currently signed in.');
+  async getProfile(): Promise<Profile | null> {
+    const cached = this.auth.getProfileSync();
+    if (cached) {
+      return cached;
     }
 
-    const { data, error } = await this.supabase.client
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    // Try to refresh (this will throw if no token is known)
+    await this.auth.refreshProfile();
+    return this.auth.getProfileSync();
+  }
 
-    if (error) {
-      console.error('Error fetching profile:', error.message);
-      throw new Error('Failed to fetch profile data.');
-    }
+  /**
+   * Fetch a profile by UUID (direct API call).
+   * Useful when you already have the id (e.g. decoded from token).
+   */
+  async getProfileById(id: string): Promise<Profile> {
+    const encoded = encodeURIComponent(id);
+    return await firstValueFrom(this.http.get<Profile>(`${environment.apiUrl}/profiles/${encoded}`, { withCredentials: true }));
+  }
 
-    return data;
+  /**
+   * Upsert profile for authenticated user.
+   * Backend expects token/cookie to identify the user and will save by subject.
+   */
+  async updateProfile(payload: any): Promise<Profile> {
+    return await firstValueFrom(this.http.post<Profile>(`${environment.apiUrl}/profiles/sync`, payload, { withCredentials: true }));
   }
 }

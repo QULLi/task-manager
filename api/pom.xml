@@ -23,7 +23,7 @@
         <lombok.version>1.18.32</lombok.version>
         <flyway.version>11.9.1</flyway.version>
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-        <jjwt.version>0.12.6</jjwt.version>
+        <jjwt.version>0.12.5</jjwt.version>
     </properties>
 
     <dependencies>

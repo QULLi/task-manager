@@ -5,6 +5,7 @@ import com.ph.dto.TaskDto;
 import com.ph.exception.ResourceNotFoundException;
 import com.ph.model.Task;
 import com.ph.services.TaskService;
+import com.ph.security.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,20 @@ import java.util.stream.Collectors;
 public class TaskController {
 
     private final TaskService taskService;
-    public TaskController(TaskService taskService) { this.taskService = taskService; }
+    private final JwtService jwtService;
+
+    public TaskController(TaskService taskService, JwtService jwtService) {
+        this.taskService = taskService;
+        this.jwtService = jwtService;
+    }
 
     private UUID subjectToUuid(Authentication auth) {
         if (auth == null || auth.getName() == null) {
             throw new IllegalArgumentException("Missing authentication subject");
         }
-        return UUID.fromString(auth.getName());
+        // Resolve subject (handles both plain UUID principals and principals that contain a JWT)
+        String subject = jwtService.getUserIdFromAuthentication(auth);
+        return UUID.fromString(subject);
     }
 
     private TaskDto toDto(Task t) {

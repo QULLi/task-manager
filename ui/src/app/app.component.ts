@@ -1,9 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { SupabaseService } from './supabase.service';
-import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { CommonModule } from '@angular/common';
+import { ApiAuthService } from './api-auth.service';
+import { Subscription } from 'rxjs';
 
+/**
+ * Root app component. Subscribes to ApiAuthService.authState$ (in-memory).
+ * Navigation occurs when user logs in; state is not persisted to localStorage.
+ */
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -11,52 +15,41 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'task-manager-ui';
-  sessionUser: Session['user'] | null = null;
+  sessionUser: any | null = null;
+  private sub?: Subscription;
 
-  constructor(
-    public router: Router,
-    private supabase: SupabaseService
-  ) {
-    this.loadInitialSession();
-  }
+  // Use runtime inject() to avoid "type only" injection issues
+  private auth = inject(ApiAuthService);
 
-  /**
-   * Load any existing Supabase session on startup.
-   */
-  private async loadInitialSession(): Promise<void> {
-    const session: Session | null = await this.supabase.getSession();
-    this.sessionUser = session?.user ?? null;
-  }
+  constructor(public router: Router) {}
 
   ngOnInit(): void {
-    // Subscribe to auth changes so we stay in sync
-    this.supabase.authChanges((_: AuthChangeEvent, session: Session | null) => {
+    this.sub = this.auth.authState$.subscribe((user: any | null) => {
       const prevUserId = this.sessionUser?.id;
-      this.sessionUser = session?.user ?? null;
-
-      // If we just signed in, navigate to profile
-      if (!prevUserId && session?.user) {
+      this.sessionUser = user;
+      if (!prevUserId && user) {
+        // navigate to profile on new login
         this.router.navigate(['/profile']);
       }
     });
   }
 
-  /**
-   * Returns true if there is a currently authenticated user.
-   */
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+  }
+
   isAuthenticated(): boolean {
     return this.sessionUser !== null;
   }
 
-  /**
-   * Signs out via Supabase and redirects to sign-in.
-   */
-  signOut(): void {
-    this.supabase.signOut().then(() => {
+  async signOut(): Promise<void> {
+    try {
+      await this.auth.logout();
+    } finally {
       this.sessionUser = null;
       this.router.navigate(['/signIn']);
-    });
+    }
   }
 }

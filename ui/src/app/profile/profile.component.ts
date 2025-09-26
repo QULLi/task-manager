@@ -2,7 +2,16 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { SupabaseService, IUser } from '../../app/supabase.service';
+import { ApiAuthService } from '../../app/api-auth.service';
+import { ProfileService } from '../../core/services/profile.service';
+import { TaskService } from '../../core/services/task.service';
+
+interface IUser {
+  email: string;
+  name: string;
+  website: string;
+  url: string;
+}
 
 interface ITask {
   title: string;
@@ -30,7 +39,9 @@ export class ProfileComponent implements OnInit {
   taskSuccess = '';
 
   constructor(
-    private supabaseService: SupabaseService,
+    private apiAuth: ApiAuthService,
+    private profileService: ProfileService,
+    private taskService: TaskService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -39,20 +50,17 @@ export class ProfileComponent implements OnInit {
     this.errorMessage = null;
 
     try {
-      const user = await this.supabaseService.getUser();
-      if (!user?.email) {
-        this.errorMessage = 'No user is currently logged in.';
+      const profile: any = await this.profileService.getProfile();
+      if (!profile) {
+        this.errorMessage = 'No profile found.';
         return;
       }
-      this.user.email = user.email;
-
-      const { data, error } = await this.supabaseService.getProfile();
-      if (error) throw error;
-      if (data) {
-        this.user.name = data.username || '';
-        this.user.website = data.website || '';
-        this.user.url = data.avatar_url || '';
-      }
+      this.user = {
+        email: profile.email || '',
+        name: profile.username || '',
+        website: profile.website || '',
+        url: profile.avatar_url || ''
+      };
     } catch (err: any) {
       console.error('Error loading profile:', err);
       this.errorMessage = err.message || 'Failed to load profile.';
@@ -67,8 +75,11 @@ export class ProfileComponent implements OnInit {
     this.successMessage = null;
 
     try {
-      const { error } = await this.supabaseService.updateProfile(this.user);
-      if (error) throw error;
+      await this.profileService.updateProfile({
+        username: this.user.name,
+        website: this.user.website,
+        avatar_url: this.user.url
+      });
       this.successMessage = 'Profile updated successfully!';
       this.cdr.detectChanges();
       this.clearMessagesAfterDelay();
@@ -94,8 +105,7 @@ export class ProfileComponent implements OnInit {
     }
 
     try {
-      const { error } = await this.supabaseService.updatePassword(this.newPassword);
-      if (error) throw error;
+      await this.apiAuth.updatePassword(this.newPassword);
       this.successMessage = 'Password updated successfully!';
       this.newPassword = '';
       this.cdr.detectChanges();
@@ -121,14 +131,11 @@ export class ProfileComponent implements OnInit {
 
     this.taskLoading = true;
     try {
-      const { error } = await this.supabaseService.client
-        .from('tasks')
-        .insert([{
-          title: this.task.title.trim(),
-          description: this.task.description.trim(),
-          due_date: this.task.due_date || null
-        }]);
-      if (error) throw error;
+      await this.taskService.createTask({
+        title: this.task.title.trim(),
+        description: this.task.description.trim(),
+        due_date: this.task.due_date || undefined
+      });
       this.taskSuccess = 'Task created successfully!';
       this.resetTaskForm();
       this.cdr.detectChanges();
@@ -146,8 +153,7 @@ export class ProfileComponent implements OnInit {
     this.errorMessage = null;
 
     try {
-      const { error } = await this.supabaseService.signOut();
-      if (error) throw error;
+      await this.apiAuth.logout();
       location.reload();
     } catch (err: any) {
       console.error('Error signing out:', err);

@@ -1,96 +1,31 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
-/** Task model used throughout the app */
 export interface ITask {
-  id: number;
+  id: string;
   title: string;
-  description: string;
-  due_date?: string;
+  description?: string;
+  due_date?: string; // 'YYYY-MM-DD'
 }
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private tasks: ITask[] = [];
+  constructor(private http: HttpClient) {}
 
-  constructor() {
-    // Populate mock data on service instantiation
-    this.seedMockData();
+  getTasks() {
+    return this.http.get<ITask[]>(`${environment.apiUrl}/tasks`, { withCredentials: true });
   }
 
-  /** Return a copy of current mock tasks */
-  getTasks(): ITask[] {
-    return [...this.tasks];
+  createTask(dto: Partial<ITask>) {
+    return this.http.post<ITask>(`${environment.apiUrl}/tasks`, dto, { withCredentials: true });
   }
 
-  /** Add a new mock task */
-  addTask(task: ITask): void {
-    this.tasks.push(task);
+  updateTask(id: string, dto: Partial<ITask>) {
+    return this.http.put<ITask>(`${environment.apiUrl}/tasks/${encodeURIComponent(id)}`, dto, { withCredentials: true });
   }
 
-  /** Update an existing mock task */
-  updateTask(updated: ITask): void {
-    const index = this.tasks.findIndex(t => t.id === updated.id);
-    if (index > -1) {
-      this.tasks[index] = { ...updated };
-    }
-  }
-
-  /** Remove a task by its ID */
-  removeTask(id: number): void {
-    this.tasks = this.tasks.filter(t => t.id !== id);
-  }
-
-  /** Populate the in-memory task list with healthcare staffing mock data */
-  private seedMockData(): void {
-    const today = new Date();
-    this.tasks = [
-      {
-        id: 1,
-        title: 'Radiology Nurse – 3-day assignment',
-        description:
-          'Temporary placement at Radiology Unit, St. Erik Hospital. Assist with CT and MRI imaging, start: tomorrow.',
-        due_date: this.formatDate(this.addDays(today, 1)),
-      },
-      {
-        id: 2,
-        title: 'Assistant Nurse – Night shift coverage',
-        description:
-          'Night shift coverage at Acute Geriatrics, Östra Regional Hospital. Responsible for basic care and vitals.',
-        due_date: this.formatDate(this.addDays(today, 0)),
-      },
-      {
-        id: 3,
-        title: 'Medical Doctor – Weekend ER standby',
-        description:
-          'Weekend coverage at Emergency Department, NorthCare Medical. General internal medicine responsibilities.',
-        due_date: this.formatDate(this.addDays(today, 2)),
-      },
-      {
-        id: 4,
-        title: 'Physiotherapist – Rehab ward consultation',
-        description:
-          'Consulting physiotherapist needed for orthopedic rehab patients at Danderyd Hospital. One-day assignment.',
-        due_date: this.formatDate(this.addDays(today, 3)),
-      },
-      {
-        id: 5,
-        title: 'Midwife – Temporary coverage maternity unit',
-        description:
-          'Midwife needed at Söderkliniken for routine deliveries and check-ups. Duration: 2 shifts, incl. handover.',
-        due_date: this.formatDate(this.addDays(today, 4)),
-      },
-    ];
-  }
-
-  /** Add N days to given date */
-  private addDays(date: Date, days: number): Date {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-  }
-
-  /** Format date to YYYY-MM-DD */
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+  deleteTask(id: string) {
+    return this.http.delete<void>(`${environment.apiUrl}/tasks/${encodeURIComponent(id)}`, { withCredentials: true });
   }
 }

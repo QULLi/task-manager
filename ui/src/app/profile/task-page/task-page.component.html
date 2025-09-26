@@ -1,7 +1,7 @@
 <div class="task-container">
   <!-- Form Section -->
   <div class="task-form">
-    <h2 class="section-header">Create New Assignment (Mock)</h2>
+    <h2 class="section-header">Create New Task</h2>
 
     <div *ngIf="formError" class="alert alert-danger">{{ formError }}</div>
     <div *ngIf="formSuccess" class="alert alert-success">{{ formSuccess }}</div>
@@ -17,7 +17,7 @@
           [(ngModel)]="newTask.title"
           required
           [disabled]="taskLoading"
-          placeholder="Assignment title"
+          placeholder="Task title"
         />
       </div>
 
@@ -30,7 +30,7 @@
           [(ngModel)]="newTask.description"
           rows="2"
           [disabled]="taskLoading"
-          placeholder="Assignment details"
+          placeholder="Task details"
         ></textarea>
       </div>
 
@@ -51,7 +51,7 @@
         class="btn-add w-100"
         [disabled]="taskLoading || f.form.invalid"
       >
-        {{ taskLoading ? 'Adding…' : 'Add Assignment' }}
+        {{ taskLoading ? 'Adding…' : 'Add Task' }}
       </button>
     </form>
   </div>

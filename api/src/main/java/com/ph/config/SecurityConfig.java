@@ -1,6 +1,8 @@
 package com.ph.config;
 
+import com.ph.security.JwtService;
 import com.ph.security.SupabaseJwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,7 +33,7 @@ public class SecurityConfig {
                                                    SupabaseJwtAuthenticationFilter supabaseFilter) throws Exception {
         http
                 .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // Disabled for stateless token-based API
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(handler -> handler.authenticationEntryPoint(restAuthenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
@@ -39,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/public/**", "/static/**", "/assets/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(supabaseFilter, UsernamePasswordAuthenticationFilter.class);
@@ -47,6 +49,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public SupabaseJwtAuthenticationFilter supabaseJwtAuthenticationFilter(JwtService jwtService) {
+        return new SupabaseJwtAuthenticationFilter(jwtService);
+    }
+
+    /**
+     * Custom authentication entry point returning JSON on 401.
+     */
     private AuthenticationEntryPoint restAuthenticationEntryPoint() {
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -61,9 +71,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(@Value("${cors.allowed-origins:http://localhost:4200}") String allowedOrigins) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200")); // or read from env
+        config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         config.setAllowCredentials(true);

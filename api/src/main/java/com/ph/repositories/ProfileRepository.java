@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+/**
+ * JPA repository for Profile entity.
+ */
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, UUID> {
     // default JPA methods are sufficient

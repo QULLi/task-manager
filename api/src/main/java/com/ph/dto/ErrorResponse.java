@@ -1,8 +1,11 @@
 package com.ph.dto;
 
+import lombok.Getter;
+
 import java.time.Instant;
 
 /** Minimal, stable error envelope for consistent API responses. */
+@Getter
 public class ErrorResponse {
     private final String message;
     private final String code;
@@ -14,7 +17,4 @@ public class ErrorResponse {
         this.timestamp = Instant.now();
     }
 
-    public String getMessage() { return message; }
-    public String getCode() { return code; }
-    public Instant getTimestamp() { return timestamp; }
 }

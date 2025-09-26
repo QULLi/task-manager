@@ -9,7 +9,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
-import { AuthInterceptor } from '../core/interceptors/auth.interceptor';
+import { WithCredentialsInterceptor } from '../core/interceptors/with-credentials.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
+      useClass: WithCredentialsInterceptor,
       multi: true,
     },
 
